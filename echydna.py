@@ -2,6 +2,7 @@
 
 from math   import log,floor
 from random import Random,random as unit_random,choice,shuffle,sample as random_sample
+from io     import IOBase
 
 
 # EchyDna--
@@ -88,7 +89,7 @@ class EchyDna(object):
 	def fasta(self,filename=None,name=None,wrap=None,append=False,returnIt=True):
 		"""
 		if filename is a string, we'll write a file with that name and close it
-		if it is a file object, we'll write to it and leave it open
+		if it is a file-like object, we'll write to it and leave it open
 		append is only relevant if filename is a string
 		"""
 		if (name == None): name = self.name
@@ -109,10 +110,11 @@ class EchyDna(object):
 			if (append): f = open(filename,"at")
 			else:        f = open(filename,"wt")
 			closeFile = True
-		elif (isinstance(filename,file)):
+		# this used to be isinstance(filename,file); see github issue #2
+		elif (isinstance(filename,IOBase)) or (hasattr(filename,"write")):
 			f = filename
 		else:
-			raise ValueError("filename argument is not a valid string")
+			raise ValueError("filename argument is not a valid string or file-like object")
 		print(fasta,file=f)
 		if (closeFile):
 			f.close()
@@ -493,13 +495,13 @@ def resolve_prng(seed=None):
 		prng = seed
 		chooser = prng.choice
 		spinner = prng.random
-		sampler = prng.random_sample
+		sampler = prng.sample
 	elif (seed != None):
 		prng = Random()
 		prng.seed(seed)
 		chooser = prng.choice
 		spinner = prng.random
-		sampler = prng.random_sample
+		sampler = prng.sample
 	else:
 		chooser = choice
 		spinner = unit_random
